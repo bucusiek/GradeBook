@@ -5,10 +5,24 @@ namespace src.GradeBook
 {
     public delegate void GradeAddedDelegate(object sender,EventArgs args);
 
-    public class Book
+    public class NamedObject
+    {
+        public NamedObject(string name)
+        {
+            Name = name;
+        }
+
+        public string Name
+        {
+            get;
+            set;
+        }
+    }
+    public class Book : NamedObject
     {
         //before using an object we must init this in constructor , statment new...() is simply running an constructor 
-        public Book(string name){
+        public Book(string name) : base(name)
+        {
             grades = new List<double>();
             Name = name;
         }
@@ -77,11 +91,7 @@ namespace src.GradeBook
             return result;
         }
         List<double> grades;
-        public string Name 
-        {   
-            get; 
-            set; 
-        }
+       
         public const string CATEGORY = "Science";
         //readonly can be changed only in constructor
         //const can not be modyfiyng, if we use public const name of variable schould be uppercases
