@@ -16,10 +16,26 @@ namespace GradeBook
             //ctr .  to quick fixes
             // static metod can not be used in object. we can use static i statment Program.Main(args) 
             //ctr k+c to coment bunch of code, ctrl k+u to undone + ctrl /
-            var book = new Book("Beauty Book");
+            var book = new DiskBook("Beauty Book");
             book.GradeAdded += OnGradeAdded;
-            
-            while(true)//infinite loop
+
+            EnterGrade(book);
+
+            var stats = book.GetStatistics();
+
+            Console.WriteLine(InMemoryBook.CATEGORY);
+            Console.WriteLine($"The avarage grade is: {stats.Avarage:N1}");
+            Console.WriteLine($"The heiest grade is: {stats.High}");
+            Console.WriteLine($"The lowest grade is: {stats.Low}");
+            Console.WriteLine($"The letter grade is: {stats.Letter}");
+            //:N1 says that we have one place after digit 
+            //Console.WriteLine($"Hello, {args[0]}!"); // interpolation, we can use in string other values of expression
+
+        }
+
+        private static void EnterGrade(IBook book)
+        {
+            while (true)//infinite loop
             {
                 Console.WriteLine("Enter a number or 'q' to quit");
                 var input = Console.ReadLine();
@@ -30,13 +46,13 @@ namespace GradeBook
                 try
                 {
                     var grade = double.Parse(input);
-                    book.AddGrade(grade); 
+                    book.AddGrade(grade);
                 }
-                catch(ArgumentException ex)
+                catch (ArgumentException ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
-                catch(FormatException ex)
+                catch (FormatException ex)
                 {
                     Console.WriteLine(ex.Message);
                 }
@@ -44,20 +60,10 @@ namespace GradeBook
                 {
                     Console.WriteLine("**");
                 }
-                
+
             }
-                
-            var stats = book.GetStatistics();
-
-            Console.WriteLine(Book.CATEGORY);
-            Console.WriteLine($"The avarage grade is: {stats.Avarage:N1}");
-            Console.WriteLine($"The heiest grade is: {stats.High}");
-            Console.WriteLine($"The lowest grade is: {stats.Low}");
-            Console.WriteLine($"The letter grade is: {stats.Letter}");
-            //:N1 says that we have one place after digit 
-            //Console.WriteLine($"Hello, {args[0]}!"); // interpolation, we can use in string other values of expression
-
         }
+
         static void OnGradeAdded (object sender, EventArgs e)
         {
             Console.WriteLine("A grade was added");

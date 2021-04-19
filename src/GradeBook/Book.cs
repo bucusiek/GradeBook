@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 
 namespace src.GradeBook
 {
@@ -18,15 +19,75 @@ namespace src.GradeBook
             set;
         }
     }
-    public class Book : NamedObject
+    public interface IBook
+    {
+        void AddGrade(double grade);
+        Statistics GetStatistics();
+        string Name {get;}
+        event GradeAddedDelegate GradeAdded;
+
+    }
+    public abstract class Book : NamedObject, IBook
+    {
+        protected Book(string name) : base(name)
+        {
+        }
+
+        public abstract event GradeAddedDelegate GradeAdded;
+
+        public abstract void AddGrade (double grade);
+
+        public abstract Statistics GetStatistics();
+        
+    }
+    public class DiskBook : Book
+    {
+        public DiskBook(string name) : base(name)
+        {
+        }
+
+        public override event GradeAddedDelegate GradeAdded;
+
+        public override void AddGrade(double grade)
+        {   
+            
+            using (var writer = File.AppendText($"{Name}.txt"))
+            {
+                writer.WriteLine(grade);
+                if (GradeAdded != null)
+                {
+                    GradeAdded(this, new EventArgs());
+                }
+            }
+
+        }
+
+        public override Statistics GetStatistics()
+        {   
+            var result = new Statistics();  
+            using (var reader = File.OpenText($"{Name}.txt"))
+            {
+                var line = reader.ReadLine();
+                while(line != null)
+                {
+                    var number = double.Parse(line);
+                    result.Add(number);
+                    line = reader.ReadLine();
+                }
+            }
+            
+            return result;
+        }
+    }
+    public class InMemoryBook : Book
     {
         //before using an object we must init this in constructor , statment new...() is simply running an constructor 
-        public Book(string name) : base(name)
+        public InMemoryBook(string name) : base(name)
         {
             grades = new List<double>();
             Name = name;
         }
-        public void AddGrade(double grade)
+        public override void AddGrade(double grade)
         {
             if (grade <= 100 && grade >= 0)
             {   
@@ -42,13 +103,11 @@ namespace src.GradeBook
             }
             
         }
-        public event GradeAddedDelegate GradeAdded;
-        public Statistics GetStatistics()
+        public override event GradeAddedDelegate GradeAdded;
+        public override Statistics GetStatistics()
         {   
             var result = new Statistics();
-            result.Avarage = 0.0;
-            result.High = double.MinValue;
-            result.Low = double.MaxValue;
+            
             //for every value <number> in arr numbers. it has to have a type correct
             
             for(var i =0; i<grades.Count; i++)
@@ -59,34 +118,9 @@ namespace src.GradeBook
                 //     continue ->skip next 3 lines but keeps iterating in the loop
                 //     goto done; -> go to done: 
                 // }
-                result.High = Math.Max(grades[i],result.High);
-                result.Low = Math.Min(grades[i],result.Low);
-                result.Avarage =result.Avarage + grades[i];
-            }
-            result.Avarage=result.Avarage/grades.Count;
-            // done:
-            switch(result.Avarage)
-            {
-                case var d when d>=90:
-                    result.Letter ='A';
-                    break;
-                case var d when (80 <= d && d < 89):
-                    result.Letter ='B';
-                    break;
-                case var d when (70 <= d && d < 79):
-                    result.Letter ='C';
-                    break;
-                case var d when (60 <= d && d < 69):
-                    result.Letter ='D';
-                    break;
-                case var d when (50 <= d && d < 59):
-                    result.Letter ='E';
-                    break;
-                default:
-                    result.Letter = 'F';
-                    break;
-
-
+                result.Add(grades[i]);
+                
+                
             }
             return result;
         }
